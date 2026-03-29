@@ -264,9 +264,10 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
 .car-badge{padding:3px 10px;background:var(--cyan);color:#000;font-size:10px;font-weight:800;border-radius:4px;letter-spacing:1.2px;flex-shrink:0;}
 .car-title{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .car-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:28px;}
-.car-nav-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 22px;background:var(--card);border:1px solid var(--border);border-radius:9px;color:var(--cyan);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .2s;}
-.car-nav-btn:hover{background:rgba(0,212,255,0.08);border-color:var(--cyan);}
+.car-nav-btn{display:inline-flex;align-items:center;gap:6px;padding:11px 28px;background:var(--card);border:1px solid var(--border);border-radius:9px;color:var(--cyan);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .2s;}
+.car-nav-btn:hover{background:rgba(0,212,255,0.08);border-color:var(--cyan);box-shadow:0 0 16px rgba(0,212,255,0.15);}
 .car-hint{text-align:center;font-size:11px;color:rgba(255,255,255,0.22);margin-top:10px;letter-spacing:.3px;}
+.carousel-wrap{display:flex;flex-direction:column;align-items:center;width:100%;}
 .pg-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;background:var(--card);border:1px dashed rgba(0,212,255,0.12);border-radius:20px;gap:12px;}
 .pg-empty svg{opacity:.2;}
 .pg-empty p{font-size:14px;color:var(--gray);}
@@ -837,17 +838,18 @@ function renderPortfolio(){
   }).join('');
 
   el.innerHTML = `
-    <div class="carousel-section" id="car-section">
-      <div class="carousel-track" id="car-track">${cardsHtml}</div>
-    </div>
-    <div class="car-nav">
-      <button class="car-nav-btn" onclick="carMove(-1)">&#8592; Prev</button>
-      <button class="car-nav-btn" onclick="carMove(1)">Next &#8594;</button>
-    </div>
-    <div class="car-hint">Drag to spin &bull; Scroll to nudge &bull; Hover to pause</div>`;
+    <div class="carousel-wrap">
+      <div class="carousel-section" id="car-section">
+        <div class="carousel-track" id="car-track">${cardsHtml}</div>
+      </div>
+      <div class="car-nav">
+        <button class="car-nav-btn" onclick="carMove(-1)">&#8592; Prev</button>
+        <button class="car-nav-btn" onclick="carMove(1)">Next &#8594;</button>
+      </div>
+      <div class="car-hint">Click a side image to navigate &bull; Click center to view full</div>
+    </div>`;
 
   positionCards(filtered.length);
-  setupCarDrag();
 }
 
 function positionCards(total){
@@ -884,25 +886,13 @@ function carCardClick(i){
   if(i === carIdx){
     if(filtered[i].imageUrl) openLb(filtered[i].imageUrl, filtered[i].title, filtered[i].type.toUpperCase());
   } else {
-    const diff = i - carIdx;
+    // Navigate toward clicked card using shortest wrap-around path
+    const total = filtered.length;
+    let diff = i - carIdx;
+    if(diff > total/2) diff -= total;
+    if(diff < -total/2) diff += total;
     carMove(diff > 0 ? 1 : -1);
   }
-}
-
-function setupCarDrag(){
-  const sec = document.getElementById('car-section');
-  if(!sec) return;
-  let startX = null;
-  sec.addEventListener('mousedown', e => { startX = e.clientX; });
-  sec.addEventListener('mouseup', e => {
-    if(startX!==null){ const d=e.clientX-startX; if(Math.abs(d)>40) carMove(d<0?1:-1); startX=null; }
-  });
-  sec.addEventListener('mouseleave', ()=>{ startX=null; });
-  sec.addEventListener('touchstart', e=>{ startX=e.touches[0].clientX; },{passive:true});
-  sec.addEventListener('touchend', e=>{
-    if(startX!==null){ const d=e.changedTouches[0].clientX-startX; if(Math.abs(d)>40) carMove(d<0?1:-1); startX=null; }
-  });
-  sec.addEventListener('wheel', e=>{ e.preventDefault(); carMove(e.deltaY>0?1:-1); },{passive:false});
 }
 
 function escAttr(s){ return (s||'').replace(/'/g,"\'").replace(/"/g,'&quot;'); }
