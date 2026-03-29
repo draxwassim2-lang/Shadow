@@ -254,16 +254,16 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
 }
 
 /* ===== 3D CAROUSEL ===== */
-.carousel-section{position:relative;width:100%;height:340px;perspective:1100px;overflow:visible;}
+.carousel-section{position:relative;width:100%;height:460px;perspective:1400px;overflow:visible;display:flex;align-items:center;justify-content:center;}
 .carousel-track{position:relative;width:100%;height:100%;transform-style:preserve-3d;}
-.car-card{position:absolute;top:50%;left:50%;width:300px;height:200px;margin-top:-100px;margin-left:-150px;border-radius:16px;overflow:hidden;cursor:pointer;transition:all .55s cubic-bezier(.25,.46,.45,.94);backface-visibility:hidden;background:var(--card);border:1px solid var(--border);}
+.car-card{position:absolute;top:50%;left:50%;width:420px;height:280px;margin-top:-140px;margin-left:-210px;border-radius:16px;overflow:hidden;cursor:pointer;transition:all .55s cubic-bezier(.25,.46,.45,.94);backface-visibility:hidden;background:var(--card);border:1px solid var(--border);}
 .car-card img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
 .car-card-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:rgba(0,212,255,0.2);}
 .car-card-ph span{font-size:11px;color:rgba(255,255,255,0.15);}
-.car-overlay{position:absolute;bottom:0;left:0;right:0;padding:12px 14px;background:linear-gradient(0deg,rgba(0,0,0,0.85) 0%,transparent 100%);display:flex;align-items:center;gap:8px;}
-.car-badge{padding:2px 8px;background:var(--cyan);color:#000;font-size:9px;font-weight:800;border-radius:4px;letter-spacing:1.2px;flex-shrink:0;}
-.car-title{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.car-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;}
+.car-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px 16px;background:linear-gradient(0deg,rgba(0,0,0,0.85) 0%,transparent 100%);display:flex;align-items:center;gap:8px;}
+.car-badge{padding:3px 10px;background:var(--cyan);color:#000;font-size:10px;font-weight:800;border-radius:4px;letter-spacing:1.2px;flex-shrink:0;}
+.car-title{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.car-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:28px;}
 .car-nav-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 22px;background:var(--card);border:1px solid var(--border);border-radius:9px;color:var(--cyan);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .2s;}
 .car-nav-btn:hover{background:rgba(0,212,255,0.08);border-color:var(--cyan);}
 .car-hint{text-align:center;font-size:11px;color:rgba(255,255,255,0.22);margin-top:10px;letter-spacing:.3px;}
@@ -300,8 +300,8 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
   .pricing-grid{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:768px){
-  .carousel-section{height:240px;}
-  .car-card{width:220px;height:147px;margin-top:-73px;margin-left:-110px;}
+  .carousel-section{height:340px;}
+  .car-card{width:320px;height:213px;margin-top:-107px;margin-left:-160px;}
   section{padding:70px 16px;}
   nav{padding:0 16px;}
   .hero-title{font-size:48px;}
@@ -314,8 +314,8 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
   .contact-inner{padding:0;}
 }
 @media(max-width:480px){
-  .carousel-section{height:200px;}
-  .car-card{width:180px;height:120px;margin-top:-60px;margin-left:-90px;}
+  .carousel-section{height:280px;}
+  .car-card{width:260px;height:173px;margin-top:-87px;margin-left:-130px;}
   .hero-title{font-size:38px;}
   .sec-title{font-size:34px;}
   .hero-btns{flex-direction:column;}
@@ -669,7 +669,7 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
 </section>
 
 <footer>
-  <div class="ft">© 2025 Shadow GFX — All rights reserved.</div>
+  <div class="ft">© 2026 Shadow GFX — All rights reserved.</div>
   <div class="ft">Roblox GFX Designer</div>
 </footer>
 
@@ -859,8 +859,8 @@ function positionCards(total){
     let d = offset;
     if(d > wrap/2) d -= wrap;
     if(d < -wrap/2) d += wrap;
-    const tx = d * 230;
-    const tz = -Math.abs(d) * 130;
+    const tx = d * 310;
+    const tz = -Math.abs(d) * 160;
     const ry = d * -18;
     const scale = d === 0 ? 1 : Math.max(0.72, 1 - Math.abs(d)*0.1);
     const op = Math.abs(d) > 2 ? 0 : (d === 0 ? 1 : Math.max(0.4, 1 - Math.abs(d)*0.25));
@@ -960,7 +960,7 @@ function renderReviews(){
           ? `<img class="rev-avatar" src="${r.imageUrl}" alt="${r.name}" onerror="this.outerHTML='<div class=rev-avph>${r.name[0].toUpperCase()}</div>'">`
           : `<div class="rev-avph">${r.name[0].toUpperCase()}</div>`
         }
-        <div><div class="rev-name">★★★★★ — ${r.name}</div></div>
+        <div><div class="rev-name">${'★'.repeat(r.stars||5)}${'☆'.repeat(5-(r.stars||5))} — ${r.name}</div></div>
       </div>
       <p class="rev-text">${r.text}</p>
     </div>`).join('');
@@ -1066,23 +1066,27 @@ function addWork(){
   const title = document.getElementById('w-title').value.trim();
   const type = document.getElementById('w-type').value;
   if(!title) return alert('Please enter a title.');
-  if(!window._dbReady) return alert('Firebase not connected yet. Please wait a moment and try again.');
+  const btn = document.querySelector('#at-works .fsub');
+  if(btn){ btn.disabled=true; btn.textContent='Adding...'; }
   window._fbPush('works', {imageUrl:imgSrc||'', title, type, ts:Date.now()})
     .then(()=>{
       document.getElementById('w-img').value='';
       document.getElementById('w-title').value='';
+      document.getElementById('w-type').value='thumbnail';
       currentWorkImgData=null;
-      document.getElementById('file-preview-wrap').style.display='none';
-      document.getElementById('file-drop').style.display='flex';
+      const fpw = document.getElementById('file-preview-wrap');
+      const fd = document.getElementById('file-drop');
+      if(fpw) fpw.style.display='none';
+      if(fd) fd.style.display='flex';
       showToast('✅ Work added — visible to everyone!');
-      // Force re-fetch and re-render
       return _fbFetch('works').then(data => {
         window.works = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
         renderPortfolio();
         renderManage();
       });
     })
-    .catch(e=>alert('Error: '+e.message));
+    .catch(e=>alert('Error saving work: '+e.message))
+    .finally(()=>{ if(btn){ btn.disabled=false; btn.textContent='+ Add Work'; } });
 }
 
 function addReview(){
@@ -1092,33 +1096,39 @@ function addReview(){
   const text = document.getElementById('r-text').value.trim();
   const stars = parseInt(document.getElementById('r-stars').value);
   if(!name || !text) return alert('Please fill in name and review text.');
-  if(!window._dbReady) return alert('Firebase not connected yet. Please wait a moment and try again.');
+  const btn = document.querySelector('#at-reviews .fsub');
+  if(btn){ btn.disabled=true; btn.textContent='Adding...'; }
   window._fbPush('reviews', {name, imageUrl:imgSrc||'', text, stars, ts:Date.now()})
     .then(()=>{
       document.getElementById('r-name').value='';
       document.getElementById('r-img').value='';
       document.getElementById('r-text').value='';
+      document.getElementById('r-stars').value='5';
       currentRevImgData=null;
       showToast('✅ Review added — visible to everyone!');
-      // Force re-fetch and re-render
       return _fbFetch('reviews').then(data => {
         window.reviews = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
         renderReviews();
         renderManage();
       });
     })
-    .catch(e=>alert('Error: '+e.message));
+    .catch(e=>alert('Error saving review: '+e.message))
+    .finally(()=>{ if(btn){ btn.disabled=false; btn.textContent='+ Add Review'; } });
 }
 
 function renderManage(){
-  document.getElementById('w-count').textContent = works.length;
-  document.getElementById('r-count').textContent = reviews.length;
-  document.getElementById('a-works-list').innerHTML = works.length === 0
+  const wc = document.getElementById('w-count');
+  const rc = document.getElementById('r-count');
+  const awl = document.getElementById('a-works-list');
+  const arl = document.getElementById('a-reviews-list');
+  if(wc) wc.textContent = works.length;
+  if(rc) rc.textContent = reviews.length;
+  if(awl) awl.innerHTML = works.length === 0
     ? '<div class="a-item">No works yet.</div>'
     : works.map(w => `<div class="a-item"><span>[${w.type}] ${w.title}</span><button class="a-del" onclick="delWork('${w._key}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div>`).join('');
-  document.getElementById('a-reviews-list').innerHTML = reviews.length === 0
+  if(arl) arl.innerHTML = reviews.length === 0
     ? '<div class="a-item">No reviews yet.</div>'
-    : reviews.map(r => `<div class="a-item"><span>★${r.stars} — ${r.name}</span><button class="a-del" onclick="delReview('${r._key}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div>`).join('');
+    : reviews.map(r => `<div class="a-item"><span>${'★'.repeat(r.stars||5)} — ${r.name}</span><button class="a-del" onclick="delReview('${r._key}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div>`).join('');
 }
 
 function delWork(key){
