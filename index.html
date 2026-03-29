@@ -254,20 +254,29 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
 }
 
 /* ===== 3D CAROUSEL ===== */
-.carousel-section{position:relative;width:100%;height:460px;perspective:1600px;overflow:visible;display:flex;align-items:center;justify-content:center;}
+.carousel-wrap{display:flex;flex-direction:column;align-items:center;width:100%;}
+.carousel-outer{position:relative;display:flex;align-items:center;justify-content:center;width:100%;}
+.carousel-section{position:relative;flex:1;height:460px;perspective:1600px;overflow:visible;display:flex;align-items:center;justify-content:center;}
 .carousel-track{position:relative;width:100%;height:100%;transform-style:preserve-3d;}
-.car-card{position:absolute;top:50%;left:50%;width:420px;height:280px;margin-top:-140px;margin-left:-210px;border-radius:16px;overflow:hidden;cursor:pointer;transition:all .55s cubic-bezier(.25,.46,.45,.94);backface-visibility:hidden;background:var(--card);border:1px solid var(--border);}
+.car-card{position:absolute;top:50%;left:50%;width:420px;height:280px;margin-top:-140px;margin-left:-210px;border-radius:16px;overflow:hidden;cursor:pointer;transition:all .4s cubic-bezier(.25,.46,.45,.94);backface-visibility:hidden;background:var(--card);border:1px solid var(--border);}
 .car-card img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
 .car-card-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:rgba(0,212,255,0.2);}
 .car-card-ph span{font-size:11px;color:rgba(255,255,255,0.15);}
 .car-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px 16px;background:linear-gradient(0deg,rgba(0,0,0,0.85) 0%,transparent 100%);display:flex;align-items:center;gap:8px;}
 .car-badge{padding:3px 10px;background:var(--cyan);color:#000;font-size:10px;font-weight:800;border-radius:4px;letter-spacing:1.2px;flex-shrink:0;}
 .car-title{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.car-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;}
-.car-nav-btn{display:inline-flex;align-items:center;gap:6px;padding:11px 28px;background:var(--card);border:1px solid var(--border);border-radius:9px;color:var(--cyan);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .2s;}
-.car-nav-btn:hover{background:rgba(0,212,255,0.08);border-color:var(--cyan);box-shadow:0 0 16px rgba(0,212,255,0.15);}
-.car-hint{text-align:center;font-size:11px;color:rgba(255,255,255,0.22);margin-top:8px;letter-spacing:.3px;}
-.carousel-wrap{display:flex;flex-direction:column;align-items:center;width:100%;}
+/* Arrow buttons - sides of carousel */
+.car-arrow{flex-shrink:0;width:50px;height:50px;border-radius:50%;background:rgba(0,212,255,0.1);border:1.5px solid rgba(0,212,255,0.3);color:var(--cyan);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:200;line-height:1;}
+.car-arrow:hover{background:rgba(0,212,255,0.22);border-color:var(--cyan);box-shadow:0 0 20px rgba(0,212,255,0.35);transform:scale(1.1);}
+.car-arrow:active{transform:scale(0.93);}
+.car-arrow-l{margin-right:20px;}
+.car-arrow-r{margin-left:20px;}
+.car-hint{text-align:center;font-size:11px;color:rgba(255,255,255,0.22);margin-top:10px;letter-spacing:.3px;}
+@media(max-width:768px){
+  .car-arrow{width:38px;height:38px;font-size:17px;}
+  .car-arrow-l{margin-right:6px;}
+  .car-arrow-r{margin-left:6px;}
+}
 .pg-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;background:var(--card);border:1px dashed rgba(0,212,255,0.12);border-radius:20px;gap:12px;}
 .pg-empty svg{opacity:.2;}
 .pg-empty p{font-size:14px;color:var(--gray);}
@@ -488,7 +497,28 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
     window._fbPush = (path, val) => _fbPushRest(path, val);
     window._fbRemove = (path) => _fbRemoveRest(path);
 
-    // Initialize listeners after DOM ready
+    // Pre-fetch data immediately (don't wait for DOMContentLoaded)
+    Promise.all([
+      _fbFetch('works').then(data => {
+        window.works = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
+      }).catch(()=>{}),
+      _fbFetch('reviews').then(data => {
+        window.reviews = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
+      }).catch(()=>{})
+    ]).then(() => {
+      // Render as soon as DOM is ready (may already be ready)
+      if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', () => {
+          if(typeof renderPortfolio === 'function') renderPortfolio();
+          if(typeof renderReviews === 'function') renderReviews();
+        });
+      } else {
+        if(typeof renderPortfolio === 'function') renderPortfolio();
+        if(typeof renderReviews === 'function') renderReviews();
+      }
+    });
+
+    // Initialize listeners after DOM ready for real-time updates
     document.addEventListener('DOMContentLoaded', () => {
       window._dbReady = true;
 
@@ -832,21 +862,21 @@ function renderPortfolio(){
 
   const cardsHtml = filtered.map((w, i) => {
     const imgHtml = w.imageUrl
-      ? `<img src="${w.imageUrl}" alt="${escAttr(w.title)}" loading="lazy" onerror="this.style.display='none'">`
+      ? `<img src="${w.imageUrl}" alt="${escAttr(w.title)}" loading="eager" decoding="async" onerror="this.style.display='none'">`
       : `<div class="car-card-ph"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>${w.title}</span></div>`;
     return `<div class="car-card" data-idx="${i}" onclick="carCardClick(${i})">${imgHtml}<div class="car-overlay"><span class="car-badge">${w.type.toUpperCase()}</span><span class="car-title">${w.title}</span></div></div>`;
   }).join('');
 
   el.innerHTML = `
     <div class="carousel-wrap">
-      <div class="carousel-section" id="car-section">
-        <div class="carousel-track" id="car-track">${cardsHtml}</div>
+      <div class="carousel-outer">
+        <button class="car-arrow car-arrow-l" onclick="carMove(-1)" aria-label="Previous">&#8592;</button>
+        <div class="carousel-section" id="car-section">
+          <div class="carousel-track" id="car-track">${cardsHtml}</div>
+        </div>
+        <button class="car-arrow car-arrow-r" onclick="carMove(1)" aria-label="Next">&#8594;</button>
       </div>
-      <div class="car-nav">
-        <button class="car-nav-btn" onclick="carMove(-1)">&#8592; Prev</button>
-        <button class="car-nav-btn" onclick="carMove(1)">Next &#8594;</button>
-      </div>
-      <div class="car-hint">Click a side image to navigate &bull; Click center to view full</div>
+      <div class="car-hint">انقر صورة جانبية للانتقال إليها &bull; انقر المركز لعرضها كاملة</div>
     </div>`;
 
   positionCards(filtered.length);
@@ -886,12 +916,9 @@ function carCardClick(i){
   if(i === carIdx){
     if(filtered[i].imageUrl) openLb(filtered[i].imageUrl, filtered[i].title, filtered[i].type.toUpperCase());
   } else {
-    // Navigate toward clicked card using shortest wrap-around path
-    const total = filtered.length;
-    let diff = i - carIdx;
-    if(diff > total/2) diff -= total;
-    if(diff < -total/2) diff += total;
-    carMove(diff > 0 ? 1 : -1);
+    // Jump directly to clicked card
+    carIdx = i;
+    positionCards(filtered.length);
   }
 }
 
