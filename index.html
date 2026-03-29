@@ -447,12 +447,21 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
       return fetch(_FB_URL + '/' + path + '.json', {
         method: 'POST',
         body: JSON.stringify(val)
-      }).then(r => r.json());
+      }).then(r => {
+        if(!r.ok) throw new Error('Firebase HTTP ' + r.status);
+        return r.json();
+      }).then(data => {
+        if(data && data.error) throw new Error(data.error);
+        return data;
+      });
     }
 
     function _fbRemoveRest(path) {
       return fetch(_FB_URL + '/' + path + '.json', {
         method: 'DELETE'
+      }).then(r => {
+        if(!r.ok) throw new Error('Firebase HTTP ' + r.status);
+        return r;
       });
     }
 
@@ -525,8 +534,8 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
     <h1 class="hero-title">GFX so clean,<br>it's <span class="c">Shadow.</span></h1>
     <p class="hero-sub">Ready to level up your game's appearance?<br>Let's bring your ideas into reality and make something awesome!</p>
     <div class="hero-btns">
-      <a href="#about" class="btn-p">⊙ Who's Shadow?</a>
-      <a href="#contact" class="btn-s">💬 Order Now</a>
+      <a href="#about" class="btn-p"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> Who's Shadow?</a>
+      <a href="#contact" class="btn-s"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Order Now</a>
     </div>
   </div>
   <div class="hero-right">
@@ -700,8 +709,8 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
       <div class="fg">
         <label class="fl">Image Source</label>
         <div class="src-tabs">
-          <button class="src-tab active" onclick="switchSrc('url',this)">🔗 URL</button>
-          <button class="src-tab" onclick="switchSrc('file',this)">📁 Upload File</button>
+          <button class="src-tab active" onclick="switchSrc('url',this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> URL</button>
+          <button class="src-tab" onclick="switchSrc('file',this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Upload File</button>
         </div>
         <div id="src-url-wrap" style="margin-top:8px"><input type="url" class="fi" id="w-img" placeholder="https://i.imgur.com/..."></div>
         <div id="src-file-wrap" style="margin-top:8px;display:none">
@@ -733,8 +742,8 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
       <div class="fg">
         <label class="fl">Avatar Image (optional)</label>
         <div class="src-tabs">
-          <button class="src-tab active" onclick="switchRevSrc('url',this)">🔗 URL</button>
-          <button class="src-tab" onclick="switchRevSrc('file',this)">📁 Upload</button>
+          <button class="src-tab active" onclick="switchRevSrc('url',this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> URL</button>
+          <button class="src-tab" onclick="switchRevSrc('file',this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Upload</button>
         </div>
         <div id="rev-src-url" style="margin-top:8px"><input type="url" class="fi" id="r-img" placeholder="https://..."></div>
         <div id="rev-src-file" style="margin-top:8px;display:none">
@@ -932,7 +941,7 @@ function renderPricing(){
       <div class="p-details">${p.details}</div>
       <div class="p-desc">${p.desc}</div>
       <div class="p-label">${p.label}</div>
-      <a href="https://discord.gg/DFegryacmK" target="_blank" class="order-btn">🛒 Order Now</a>
+      <a href="https://discord.gg/DFegryacmK" target="_blank" class="order-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Order Now</a>
     </div>`).join('');
 }
 
@@ -1066,6 +1075,12 @@ function addWork(){
       document.getElementById('file-preview-wrap').style.display='none';
       document.getElementById('file-drop').style.display='flex';
       showToast('✅ Work added — visible to everyone!');
+      // Force re-fetch and re-render
+      return _fbFetch('works').then(data => {
+        window.works = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
+        renderPortfolio();
+        renderManage();
+      });
     })
     .catch(e=>alert('Error: '+e.message));
 }
@@ -1085,6 +1100,12 @@ function addReview(){
       document.getElementById('r-text').value='';
       currentRevImgData=null;
       showToast('✅ Review added — visible to everyone!');
+      // Force re-fetch and re-render
+      return _fbFetch('reviews').then(data => {
+        window.reviews = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
+        renderReviews();
+        renderManage();
+      });
     })
     .catch(e=>alert('Error: '+e.message));
 }
@@ -1102,11 +1123,25 @@ function renderManage(){
 
 function delWork(key){
   if(!confirm('Delete this work?')) return;
-  window._fbRemove('works/'+key).then(()=>{ showToast('🗑 Work deleted'); renderManage(); });
+  window._fbRemove('works/'+key).then(()=>{
+    return _fbFetch('works').then(data => {
+      window.works = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
+      renderPortfolio();
+      renderManage();
+      showToast('🗑 Work deleted');
+    });
+  });
 }
 function delReview(key){
   if(!confirm('Delete this review?')) return;
-  window._fbRemove('reviews/'+key).then(()=>{ showToast('🗑 Review deleted'); renderManage(); });
+  window._fbRemove('reviews/'+key).then(()=>{
+    return _fbFetch('reviews').then(data => {
+      window.reviews = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
+      renderReviews();
+      renderManage();
+      showToast('🗑 Review deleted');
+    });
+  });
 }
 
 // ===== MOBILE NAV =====
