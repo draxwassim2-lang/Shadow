@@ -254,7 +254,7 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
 }
 
 /* ===== 3D CAROUSEL ===== */
-.carousel-section{position:relative;width:100%;height:460px;perspective:1400px;overflow:visible;display:flex;align-items:center;justify-content:center;}
+.carousel-section{position:relative;width:100%;height:460px;perspective:1600px;overflow:visible;display:flex;align-items:center;justify-content:center;}
 .carousel-track{position:relative;width:100%;height:100%;transform-style:preserve-3d;}
 .car-card{position:absolute;top:50%;left:50%;width:420px;height:280px;margin-top:-140px;margin-left:-210px;border-radius:16px;overflow:hidden;cursor:pointer;transition:all .55s cubic-bezier(.25,.46,.45,.94);backface-visibility:hidden;background:var(--card);border:1px solid var(--border);}
 .car-card img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
@@ -263,10 +263,10 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
 .car-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px 16px;background:linear-gradient(0deg,rgba(0,0,0,0.85) 0%,transparent 100%);display:flex;align-items:center;gap:8px;}
 .car-badge{padding:3px 10px;background:var(--cyan);color:#000;font-size:10px;font-weight:800;border-radius:4px;letter-spacing:1.2px;flex-shrink:0;}
 .car-title{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.car-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:28px;}
+.car-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;}
 .car-nav-btn{display:inline-flex;align-items:center;gap:6px;padding:11px 28px;background:var(--card);border:1px solid var(--border);border-radius:9px;color:var(--cyan);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .2s;}
 .car-nav-btn:hover{background:rgba(0,212,255,0.08);border-color:var(--cyan);box-shadow:0 0 16px rgba(0,212,255,0.15);}
-.car-hint{text-align:center;font-size:11px;color:rgba(255,255,255,0.22);margin-top:10px;letter-spacing:.3px;}
+.car-hint{text-align:center;font-size:11px;color:rgba(255,255,255,0.22);margin-top:8px;letter-spacing:.3px;}
 .carousel-wrap{display:flex;flex-direction:column;align-items:center;width:100%;}
 .pg-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;background:var(--card);border:1px dashed rgba(0,212,255,0.12);border-radius:20px;gap:12px;}
 .pg-empty svg{opacity:.2;}
@@ -861,13 +861,13 @@ function positionCards(total){
     let d = offset;
     if(d > wrap/2) d -= wrap;
     if(d < -wrap/2) d += wrap;
-    const tx = d * 310;
-    const tz = -Math.abs(d) * 160;
-    const ry = d * -18;
-    const scale = d === 0 ? 1 : Math.max(0.72, 1 - Math.abs(d)*0.1);
-    const op = Math.abs(d) > 2 ? 0 : (d === 0 ? 1 : Math.max(0.4, 1 - Math.abs(d)*0.25));
+    const tx = d * 280;
+    const tz = -Math.abs(d) * 100;
+    const ry = d * -12;
+    const scale = d === 0 ? 1 : Math.max(0.82, 1 - Math.abs(d)*0.07);
+    const op = Math.abs(d) > 2 ? 0 : (d === 0 ? 1 : Math.max(0.55, 1 - Math.abs(d)*0.18));
     const zi = 100 - Math.abs(d)*10;
-    card.style.cssText += `;transform:translate(-50%,-50%) translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg) scale(${scale});opacity:${op};z-index:${zi};filter:brightness(${d===0?1:Math.max(0.55,1-Math.abs(d)*0.2)})`;
+    card.style.cssText += `;transform:translate(-50%,-50%) translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg) scale(${scale});opacity:${op};z-index:${zi};filter:brightness(${d===0?1:Math.max(0.65,1-Math.abs(d)*0.15)})`;
     card.style.pointerEvents = Math.abs(d) > 2 ? 'none' : 'auto';
     card.style.border = d===0 ? '1px solid rgba(0,212,255,0.4)' : '1px solid rgba(255,255,255,0.06)';
     card.style.boxShadow = d===0 ? '0 20px 60px rgba(0,212,255,0.15)' : 'none';
