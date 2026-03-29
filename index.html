@@ -414,6 +414,8 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
    PRICING FOOTER links
 ═══════════════════════════════ */
 .pricing-footer a{transition:color .2s,text-shadow .2s;}
+.order-btn{display:block;margin-top:18px;padding:12px;background:rgba(255,255,255,0.18);color:#fff;font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;text-align:center;letter-spacing:.5px;transition:all .2s;border:1px solid rgba(255,255,255,0.25);}
+.order-btn:hover{background:rgba(255,255,255,0.28);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.2);}
 .pricing-footer a:hover{text-shadow:0 0 10px rgba(0,212,255,0.6);}
 
 /* Time card glow */
@@ -426,45 +428,72 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
 
 </style>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getDatabase, ref, set, onValue, remove, push } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  <!-- Firebase via REST API — no CDN needed -->
+  <script>
+    // Firebase REST API wrapper
+    const _FB_URL = 'https://shado-gfx-default-rtdb.firebaseio.com';
 
-    // ════════════════════════════════════════
-    // 🔧 YOUR FIREBASE CONFIG — paste yours here
-    // ════════════════════════════════════════
-    const firebaseConfig = {
-      apiKey: "PASTE_YOUR_API_KEY",
-      authDomain: "PASTE.firebaseapp.com",
-      databaseURL: "https://PASTE-default-rtdb.firebaseio.com",
-      projectId: "PASTE_PROJECT_ID",
-      storageBucket: "PASTE.appspot.com",
-      messagingSenderId: "000000000",
-      appId: "PASTE_APP_ID"
-    };
+    window._dbReady = false;
+    window._dbError = null;
+    window.works = [];
+    window.reviews = [];
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    async function _fbFetch(path) {
+      const r = await fetch(_FB_URL + '/' + path + '.json');
+      return r.json();
+    }
 
-    // ── Listen to works in real-time ──
-    onValue(ref(db, 'works'), snap => {
-      const data = snap.val();
-      works = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
-      renderPortfolio();
+    function _fbPushRest(path, val) {
+      return fetch(_FB_URL + '/' + path + '.json', {
+        method: 'POST',
+        body: JSON.stringify(val)
+      }).then(r => r.json());
+    }
+
+    function _fbRemoveRest(path) {
+      return fetch(_FB_URL + '/' + path + '.json', {
+        method: 'DELETE'
+      });
+    }
+
+    // Server-Sent Events for real-time updates
+    function _fbListen(path, callback) {
+      try {
+        const es = new EventSource(_FB_URL + '/' + path + '.json?format=export&orderBy="$key"', {withCredentials:false});
+        es.addEventListener('put', e => {
+          try { callback(JSON.parse(e.data).data); } catch(err) {}
+        });
+        es.addEventListener('patch', e => {
+          // On patch just re-fetch to keep it simple
+          _fbFetch(path).then(callback);
+        });
+        es.onerror = () => { es.close(); setTimeout(() => _fbListen(path, callback), 3000); };
+      } catch(e) {
+        // SSE failed, fallback to polling every 5s
+        _fbFetch(path).then(callback);
+        setInterval(() => _fbFetch(path).then(callback), 5000);
+      }
+    }
+
+    window._fbPush = (path, val) => _fbPushRest(path, val);
+    window._fbRemove = (path) => _fbRemoveRest(path);
+
+    // Initialize listeners after DOM ready
+    document.addEventListener('DOMContentLoaded', () => {
+      window._dbReady = true;
+
+      _fbListen('works', data => {
+        window.works = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
+        if(typeof renderPortfolio === 'function') renderPortfolio();
+        if(typeof renderManage === 'function') renderManage();
+      });
+
+      _fbListen('reviews', data => {
+        window.reviews = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
+        if(typeof renderReviews === 'function') renderReviews();
+        if(typeof renderManage === 'function') renderManage();
+      });
     });
-
-    // ── Listen to reviews in real-time ──
-    onValue(ref(db, 'reviews'), snap => {
-      const data = snap.val();
-      reviews = data ? Object.entries(data).map(([k,v]) => ({...v, _key:k})) : [];
-      renderReviews();
-    });
-
-    // ── Expose DB functions globally ──
-    window._fbPush = (path, val) => push(ref(db, path), val);
-    window._fbRemove = (path) => remove(ref(db, path));
-    window._dbReady = true;
   </script>
 
 </head>
@@ -574,7 +603,7 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
     </div>
     <p class="now-viewing">Now viewing: <span id="price-lbl">Thumbnails</span></p>
     <div class="pricing-grid" id="pricing-grid"></div>
-    <p class="pricing-footer">Prefer custom? <a href="https://discord.gg/DFegryacmK" target="_blank">Message on Discord</a> or <a href="mailto:shadowzxxyt@gmail.com">email me</a> for a free quote.</p>
+    <p class="pricing-footer">Prefer custom? <a href="https://discord.gg/DFegryacmK" target="_blank">Message on Discord</a> or <a href="/cdn-cgi/l/email-protection#74071c15101b030e0c0c0d00341319151d185a171b19">email me</a> for a free quote.</p>
   </div>
 </section>
 
@@ -615,14 +644,14 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
         </div>
         <span class="c-btn">Follow</span>
       </a>
-      <a href="mailto:shadowzxxyt@gmail.com" class="c-link">
+      <a href="/cdn-cgi/l/email-protection#15667d74717a626f6d6d6c61557278747c793b767a78" class="c-link">
         <div class="c-link-l">
           <div class="c-icon ci-gmail">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.910 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" fill="#EA4335"/>
             </svg>
           </div>
-          <div><div class="c-name">Gmail</div><div class="c-handle">shadowzxxyt@gmail.com</div></div>
+          <div><div class="c-name">Gmail</div><div class="c-handle"><span class="__cf_email__" data-cfemail="f0839891949f878a88888984b0979d91999cde939f9d">[email&#160;protected]</span></div></div>
         </div>
         <span class="c-btn">Send Email</span>
       </a>
@@ -751,34 +780,20 @@ footer{padding:28px 80px;border-top:1px solid var(--border);display:flex;align-i
 </div>
 
 <script>
-// ===== DATA (Firebase realtime) =====
-let works = [];
-let reviews = [];
-function save(){ /* handled by Firebase listeners */ }
+// ===== DATA (managed by Firebase REST above) =====
+// works and reviews are set as window globals
 
 // ===== GMT CLOCK =====
 function tickClock(){
+  const el = document.getElementById('gmt-clock');
+  if(!el) return;
   const t = new Date().toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
-  document.getElementById('gmt-clock').textContent = t.toUpperCase();
+  el.textContent = t.toUpperCase();
 }
-tickClock(); setInterval(tickClock, 1000);
-
-// ===== SKILL BARS =====
-const skillObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(e.isIntersecting){
-      e.target.querySelectorAll('.skill-fill').forEach(f => f.style.width = f.dataset.w + '%');
-      skillObs.unobserve(e.target);
-    }
-  });
-}, {threshold: 0.3});
-skillObs.observe(document.getElementById('about'));
 
 // ===== 3D CAROUSEL =====
 let projTab = 'thumbnails';
 let carIdx = 0;
-let carDragX = null;
-let carAutoInterval = null;
 
 function switchProjTab(tab, btn){
   projTab = tab; carIdx = 0;
@@ -795,6 +810,7 @@ function getFiltered(){
 function renderPortfolio(){
   const filtered = getFiltered();
   const el = document.getElementById('portfolio-viewer');
+  if(!el) return;
   if(filtered.length === 0){
     el.innerHTML = `<div class="pg-empty">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,255,0.4)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -880,16 +896,7 @@ function setupCarDrag(){
   sec.addEventListener('wheel', e=>{ e.preventDefault(); carMove(e.deltaY>0?1:-1); },{passive:false});
 }
 
-// Keyboard nav
-document.addEventListener('keydown', e => {
-  if(document.getElementById('lightbox').classList.contains('open')){ if(e.key==='Escape') closeLb(); return; }
-  if(document.getElementById('admin-modal').classList.contains('open')) return;
-  if(document.getElementById('pwd-modal').classList.contains('open')) return;
-  if(e.key==='ArrowLeft') carMove(-1);
-  if(e.key==='ArrowRight') carMove(1);
-});
-
-function escAttr(s){ return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function escAttr(s){ return (s||'').replace(/'/g,"\'").replace(/"/g,'&quot;'); }
 
 // ===== PRICING =====
 let priceTab = 'thumbnails';
@@ -925,13 +932,15 @@ function renderPricing(){
       <div class="p-details">${p.details}</div>
       <div class="p-desc">${p.desc}</div>
       <div class="p-label">${p.label}</div>
+      <a href="https://discord.gg/DFegryacmK" target="_blank" class="order-btn">🛒 Order Now</a>
     </div>`).join('');
 }
 
 // ===== REVIEWS =====
 function renderReviews(){
   const g = document.getElementById('reviews-grid');
-  if(reviews.length === 0){
+  if(!g) return;
+  if(!reviews || reviews.length === 0){
     g.innerHTML = `<div class="reviews-empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,255,0.3)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><p>No reviews yet.</p></div>`;
     return;
   }
@@ -956,7 +965,6 @@ function openLb(url, title, type){
   document.getElementById('lightbox').classList.add('open');
 }
 function closeLb(){ document.getElementById('lightbox').classList.remove('open'); }
-document.getElementById('lightbox').addEventListener('click', e => { if(e.target === e.currentTarget) closeLb(); });
 
 // ===== ADMIN =====
 function openPwdModal(){
@@ -986,7 +994,7 @@ function switchAdminTab(tab, btn){
   if(tab==='manage') renderManage();
 }
 
-let currentWorkImgData = null; // base64 from file upload
+let currentWorkImgData = null;
 let currentRevImgData = null;
 
 function switchSrc(mode, btn){
@@ -1049,7 +1057,7 @@ function addWork(){
   const title = document.getElementById('w-title').value.trim();
   const type = document.getElementById('w-type').value;
   if(!title) return alert('Please enter a title.');
-  if(!window._dbReady) return alert('Firebase not connected yet. Check your config.');
+  if(!window._dbReady) return alert('Firebase not connected yet. Please wait a moment and try again.');
   window._fbPush('works', {imageUrl:imgSrc||'', title, type, ts:Date.now()})
     .then(()=>{
       document.getElementById('w-img').value='';
@@ -1069,7 +1077,7 @@ function addReview(){
   const text = document.getElementById('r-text').value.trim();
   const stars = parseInt(document.getElementById('r-stars').value);
   if(!name || !text) return alert('Please fill in name and review text.');
-  if(!window._dbReady) return alert('Firebase not connected yet.');
+  if(!window._dbReady) return alert('Firebase not connected yet. Please wait a moment and try again.');
   window._fbPush('reviews', {name, imageUrl:imgSrc||'', text, stars, ts:Date.now()})
     .then(()=>{
       document.getElementById('r-name').value='';
@@ -1109,40 +1117,71 @@ function closeMobileNav(){
   document.getElementById('mobile-nav').classList.remove('open');
 }
 
-// ===== INIT =====
-renderPortfolio();
-renderPricing();
-renderReviews();
-
 function showToast(msg){
   const t=document.getElementById('toast');
+  if(!t) return;
   t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ═══════════ GLOW CURSOR ═══════════
-const glowEl = document.getElementById('glow-cursor');
-document.addEventListener('mousemove', e => {
-  glowEl.style.left = e.clientX + 'px';
-  glowEl.style.top = e.clientY + 'px';
-});
-document.addEventListener('mouseleave', () => glowEl.style.opacity = '0');
-document.addEventListener('mouseenter', () => glowEl.style.opacity = '1');
+// ===== DOM READY INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  // Clock
+  tickClock(); setInterval(tickClock, 1000);
 
-// Boost glow on interactive elements
-document.querySelectorAll('a,button,.price-card,.review-card,.car-card,.c-link,.avatar-card').forEach(el => {
-  el.addEventListener('mouseenter', () => {
-    glowEl.style.width = '500px';
-    glowEl.style.height = '500px';
-    glowEl.style.background = 'radial-gradient(circle,rgba(0,212,255,0.11) 0%,transparent 70%)';
-  });
-  el.addEventListener('mouseleave', () => {
-    glowEl.style.width = '340px';
-    glowEl.style.height = '340px';
-    glowEl.style.background = 'radial-gradient(circle,rgba(0,212,255,0.07) 0%,transparent 70%)';
-  });
-});
+  // Skill bars
+  const skillObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        e.target.querySelectorAll('.skill-fill').forEach(f => f.style.width = f.dataset.w + '%');
+        skillObs.unobserve(e.target);
+      }
+    });
+  }, {threshold: 0.3});
+  const aboutEl = document.getElementById('about');
+  if(aboutEl) skillObs.observe(aboutEl);
 
+  // Render initial UI
+  renderPortfolio();
+  renderPricing();
+  renderReviews();
+
+  // Keyboard nav
+  document.addEventListener('keydown', e => {
+    if(document.getElementById('lightbox').classList.contains('open')){ if(e.key==='Escape') closeLb(); return; }
+    if(document.getElementById('admin-modal').classList.contains('open')) return;
+    if(document.getElementById('pwd-modal').classList.contains('open')) return;
+    if(e.key==='ArrowLeft') carMove(-1);
+    if(e.key==='ArrowRight') carMove(1);
+  });
+
+  // Lightbox click outside
+  document.getElementById('lightbox').addEventListener('click', e => { if(e.target === e.currentTarget) closeLb(); });
+
+  // Glow cursor
+  const glowEl = document.getElementById('glow-cursor');
+  if(glowEl) {
+    document.addEventListener('mousemove', e => {
+      glowEl.style.left = e.clientX + 'px';
+      glowEl.style.top = e.clientY + 'px';
+    });
+    document.addEventListener('mouseleave', () => glowEl.style.opacity = '0');
+    document.addEventListener('mouseenter', () => glowEl.style.opacity = '1');
+
+    document.querySelectorAll('a,button,.price-card,.review-card,.car-card,.c-link,.avatar-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        glowEl.style.width = '500px';
+        glowEl.style.height = '500px';
+        glowEl.style.background = 'radial-gradient(circle,rgba(0,212,255,0.11) 0%,transparent 70%)';
+      });
+      el.addEventListener('mouseleave', () => {
+        glowEl.style.width = '340px';
+        glowEl.style.height = '340px';
+        glowEl.style.background = 'radial-gradient(circle,rgba(0,212,255,0.07) 0%,transparent 70%)';
+      });
+    });
+  }
+});
 </script>
 <div class="toast" id="toast"></div>
 </body>
